@@ -17,3 +17,28 @@ blocks:
             - cache restore
             - pip install --cache-dir .pip_cache -r requirements.txt
             - cache store
+  - name: Test
+    dependencies:
+      - Build
+    task:
+      prologue:
+        commands:
+          - sem-version python 3.7
+          - checkout
+          - cache restore
+          - pip install --cache-dir .pip_cache -r requirements.txt
+      jobs:
+        - name: Unit tests
+          commands:
+            - cd martor_demo
+            - python3 manage.py makemigrations
+            - python3 manage.py migrate
+            - python3 manage.py test
+        - name: Checklist
+          commands:
+            - cd martor_demo
+            - python3 manage.py check --deploy
+        - name: Style check
+          commands:
+            - pip install flake8
+            - flake8 martor_demo/ --max-line-length=127
